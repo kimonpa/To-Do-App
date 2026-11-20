@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# OneDrive / Office temp files
+~$*
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# Logs and backups
+*.log
+*.bak
+
+# Secrets - never commit these
+.env
+.env.*
