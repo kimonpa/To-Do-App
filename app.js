@@ -17,8 +17,21 @@ const emptyMessage = document.getElementById("empty-message");
 // The logged-in user's name, or null when nobody is logged in.
 let currentUser = null;
 
-// Each task is { id, text, done }. These belong to the current user.
+// A task can be open, done (tick mark) or delayed (red square).
+const STATUSES = [
+  { key: "open", label: "Open" },
+  { key: "done", label: "Done" },
+  { key: "delayed", label: "Delayed" }
+];
+
+// Each task is { id, text, status }. These belong to the current user.
 let tasks = [];
+
+// The id of the task whose status menu is open, or null when none is open.
+let openMenuId = null;
+
+// Status buttons from the last redraw, by task id. Used to give a button focus again.
+let statusButtons = {};
 
 // Builds a pattern that matches whole words, with common endings (play, plays, played, playing).
 function words(...list) {
@@ -171,11 +184,20 @@ function clearUsername() {
   }
 }
 
+// Returns a task's status. Tasks saved earlier with done: true become "done".
+function normaliseStatus(task) {
+  if (STATUSES.some((status) => status.key === task.status)) return task.status;
+  return task.done ? "done" : "open";
+}
+
 // Reads one user's saved tasks. Returns an empty list if none are saved or the data is bad.
 function loadTasks(name) {
   try {
     const saved = JSON.parse(localStorage.getItem(tasksKey(name)));
-    return Array.isArray(saved) ? saved : [];
+    if (!Array.isArray(saved)) return [];
+    return saved
+      .filter((task) => task && typeof task.text === "string")
+      .map((task) => ({ id: task.id, text: task.text, status: normaliseStatus(task) }));
   } catch (error) {
     return [];
   }
@@ -194,6 +216,7 @@ function saveTasks() {
 function showLogin() {
   currentUser = null;
   tasks = [];
+  openMenuId = null;
   appScreen.hidden = true;
   loginScreen.hidden = false;
   usernameInput.value = "";
@@ -211,10 +234,71 @@ function showApp(name) {
   taskInput.focus();
 }
 
-// Redraws the task list. Each row has a tick box, an emoji for its category, the text and a Delete button.
-// Done tasks are greyed out and lose their emoji.
+// Builds the status control for a task: a small box with a drop-down menu (Open, Done, Delayed).
+function createStatusControl(task) {
+  const current = STATUSES.find((status) => status.key === task.status);
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "status";
+  // Clicks inside the control must not reach the page, which closes open menus.
+  wrapper.addEventListener("click", (event) => event.stopPropagation());
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "status-button";
+  button.setAttribute("aria-haspopup", "menu");
+  button.setAttribute("aria-expanded", String(openMenuId === task.id));
+  button.setAttribute("aria-label", `Status of ${task.text}: ${current.label}. Change status`);
+  button.addEventListener("click", () => toggleMenu(task.id));
+
+  const box = document.createElement("span");
+  box.className = `status-box ${task.status}`;
+  box.textContent = task.status === "done" ? "✔" : "";
+
+  const caret = document.createElement("span");
+  caret.className = "caret";
+  caret.setAttribute("aria-hidden", "true");
+  caret.textContent = "▾";
+
+  button.append(box, caret);
+  wrapper.appendChild(button);
+  statusButtons[task.id] = button;
+
+  if (openMenuId === task.id) {
+    const menu = document.createElement("div");
+    menu.className = "status-menu";
+    menu.setAttribute("role", "menu");
+
+    STATUSES.forEach((status) => {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className = status.key === task.status ? "menu-item current" : "menu-item";
+      option.setAttribute("role", "menuitem");
+      option.setAttribute("data-status", status.key);
+      option.addEventListener("click", () => setStatus(task.id, status.key));
+
+      const miniBox = document.createElement("span");
+      miniBox.className = `status-box small ${status.key}`;
+      miniBox.textContent = status.key === "done" ? "✔" : "";
+
+      const label = document.createElement("span");
+      label.textContent = status.label;
+
+      option.append(miniBox, label);
+      menu.appendChild(option);
+    });
+
+    wrapper.appendChild(menu);
+  }
+
+  return wrapper;
+}
+
+// Redraws the task list. Each row has a status box, an emoji for its category, the text and a Delete button.
+// Done tasks are greyed out and lose their emoji. Delayed tasks are marked red and keep their emoji.
 function renderTasks() {
   taskList.innerHTML = "";
+  statusButtons = {};
 
   tasks.forEach((task) => {
     const match = classify(task.text);
@@ -222,16 +306,11 @@ function renderTasks() {
     const item = document.createElement("li");
     item.className = "task";
     if (match) item.className += ` cat-${match.category}`;
-    if (task.done) item.className += " done";
+    if (task.status !== "open") item.className += ` ${task.status}`;
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = Boolean(task.done);
-    checkbox.setAttribute("aria-label", `Mark done: ${task.text}`);
-    checkbox.addEventListener("change", () => toggleTask(task.id));
-    item.appendChild(checkbox);
+    item.appendChild(createStatusControl(task));
 
-    if (match && !task.done) {
+    if (match && task.status !== "done") {
       const emoji = document.createElement("span");
       emoji.className = "task-emoji";
       emoji.setAttribute("aria-hidden", "true");
@@ -257,25 +336,40 @@ function renderTasks() {
   emptyMessage.hidden = tasks.length > 0;
 }
 
-// Adds a new, not-done task, then saves and redraws.
+// Gives keyboard focus back to a task's status button after a redraw.
+function focusStatusButton(id) {
+  if (statusButtons[id]) statusButtons[id].focus();
+}
+
+// Adds a new, open task, then saves and redraws.
 function addTask(text) {
-  tasks.push({ id: Date.now() + Math.random(), text: text, done: false });
+  tasks.push({ id: Date.now() + Math.random(), text: text, status: "open" });
   saveTasks();
   renderTasks();
 }
 
-// Marks a task done, or not done if it already was. Then saves and redraws.
-function toggleTask(id) {
+// Opens a task's status menu, or closes it if it is already open.
+function toggleMenu(id) {
+  openMenuId = openMenuId === id ? null : id;
+  renderTasks();
+  focusStatusButton(id);
+}
+
+// Sets a task's status (open, done or delayed), closes the menu, then saves and redraws.
+function setStatus(id, status) {
   const task = tasks.find((t) => t.id === id);
   if (!task) return;
-  task.done = !task.done;
+  task.status = status;
+  openMenuId = null;
   saveTasks();
   renderTasks();
+  focusStatusButton(id);
 }
 
 // Deletes the task with the given id, then saves and redraws.
 function deleteTask(id) {
   tasks = tasks.filter((task) => task.id !== id);
+  openMenuId = null;
   saveTasks();
   renderTasks();
 }
@@ -311,6 +405,22 @@ taskForm.addEventListener("submit", (event) => {
   addTask(text);
   taskInput.value = "";
   taskInput.focus();
+});
+
+// Clicking anywhere else on the page closes an open status menu.
+document.addEventListener("click", () => {
+  if (openMenuId === null) return;
+  openMenuId = null;
+  renderTasks();
+});
+
+// Pressing Escape closes an open status menu.
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || openMenuId === null) return;
+  const id = openMenuId;
+  openMenuId = null;
+  renderTasks();
+  focusStatusButton(id);
 });
 
 // On page load: stay logged in if a username was saved. Otherwise show the login form.
