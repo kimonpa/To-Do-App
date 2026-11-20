@@ -458,3 +458,21 @@ body {
   color: #15803d;
   background: #dcfce7;
 }
+
+/* Clear completed button, at the right end of the footer */
+.summary .clear-done {
+  margin-left: auto;
+  padding: 6px 12px;
+  font-size: 14px;
+  background: #6b7280;
+}
+
+.summary .clear-done:hover:not(:disabled) {
+  background: #4b5563;
+  opacity: 1;
+}
+
+.summary .clear-done:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

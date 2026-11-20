@@ -16,6 +16,7 @@ const emptyMessage = document.getElementById("empty-message");
 const countDelayed = document.getElementById("count-delayed");
 const countOpen = document.getElementById("count-open");
 const countDone = document.getElementById("count-done");
+const clearDoneButton = document.getElementById("clear-done");
 
 // The logged-in user's name, or null when nobody is logged in.
 let currentUser = null;
@@ -349,6 +350,7 @@ function updateSummary() {
   countDelayed.textContent = `${delayed} of ${open} open ${open === 1 ? "task" : "tasks"} delayed`;
   countOpen.textContent = `${open} open`;
   countDone.textContent = `${done} completed`;
+  clearDoneButton.disabled = done === 0;
 }
 
 // Gives keyboard focus back to a task's status button after a redraw.
@@ -359,6 +361,14 @@ function focusStatusButton(id) {
 // Adds a new, open task, then saves and redraws.
 function addTask(text) {
   tasks.push({ id: Date.now() + Math.random(), text: text, status: "open" });
+  saveTasks();
+  renderTasks();
+}
+
+// Removes every task marked done. Open and delayed tasks stay. Then saves and redraws.
+function clearDone() {
+  tasks = tasks.filter((task) => task.status !== "done");
+  openMenuId = null;
   saveTasks();
   renderTasks();
 }
@@ -410,6 +420,9 @@ logoutButton.addEventListener("click", () => {
   }
   showLogin();
 });
+
+// Handles the Clear completed button.
+clearDoneButton.addEventListener("click", clearDone);
 
 // Handles the task form. Adds the typed task and clears the field.
 taskForm.addEventListener("submit", (event) => {
