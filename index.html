@@ -66,6 +66,13 @@
 
     <ul id="task-list"></ul>
     <p id="empty-message">No tasks yet. Add your first one above.</p>
+
+    <!-- Footer: counts of delayed, open and completed tasks. -->
+    <footer id="task-summary" class="summary" aria-live="polite">
+      <span id="count-delayed" class="chip chip-delayed"></span>
+      <span id="count-open" class="chip chip-open"></span>
+      <span id="count-done" class="chip chip-done"></span>
+    </footer>
   </main>
 
   <script src="app.js"></script>
