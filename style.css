@@ -241,7 +241,6 @@ body {
 
 .app {
   position: relative;
-  overflow: hidden;
   padding-top: 32px;
 }
 
@@ -252,6 +251,7 @@ body {
   left: 0;
   right: 0;
   height: 8px;
+  border-radius: 12px 12px 0 0;
   background: linear-gradient(90deg, #7c3aed, #ec4899, #f59e0b);
 }
 
@@ -297,14 +297,6 @@ body {
   background: #faf5ff;
 }
 
-.task input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  accent-color: #7c3aed;
-  cursor: pointer;
-}
-
 .task .task-emoji {
   flex: none;
   font-size: 1.5rem;
@@ -333,4 +325,104 @@ body {
 .task.done {
   border-left-color: #d1d5db;
   background: #f3f4f6;
+}
+
+/* ---------- Task status: a box with a drop-down (Open, Done, Delayed) ---------- */
+.task .status {
+  position: relative;
+  flex: none;
+}
+
+.task .status-button {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+}
+
+.task .status-button:hover,
+.task .status-button:focus-visible {
+  background: rgba(124, 58, 237, 0.12);
+  opacity: 1;
+}
+
+.status-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: #16a34a;
+  background: #fff;
+  border: 2px solid #9ca3af;
+  border-radius: 6px;
+}
+
+.status-box.done {
+  border-color: #16a34a;
+}
+
+.status-box.delayed {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.status-box.small {
+  width: 22px;
+  height: 22px;
+  font-size: 15px;
+}
+
+.caret {
+  font-size: 11px;
+}
+
+.status-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  min-width: 160px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.task .menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 15px;
+  color: #222;
+  text-align: left;
+  background: transparent;
+  border-radius: 6px;
+}
+
+.task .menu-item:hover,
+.task .menu-item:focus-visible {
+  background: #f3f4f6;
+  opacity: 1;
+}
+
+.task .menu-item.current {
+  font-weight: 700;
+  background: #f5f3ff;
+}
+
+/* A delayed task stays standing, marked in red. */
+.task.delayed {
+  border-left-color: #dc2626;
+  background: #fef2f2;
 }
