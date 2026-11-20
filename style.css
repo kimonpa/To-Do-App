@@ -1,0 +1,336 @@
+/* Hidden elements stay hidden, even when another rule sets display. */
+[hidden] {
+  display: none !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  color: #222;
+  background: #f4f5f7;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Login screen */
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #7c3aed, #ec4899 50%, #f59e0b);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 36px 28px;
+  text-align: center;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.login-card h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  background: linear-gradient(90deg, #7c3aed, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #7c3aed;
+}
+
+.login-card p {
+  margin: 0 0 24px;
+  color: #555;
+}
+
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#login-form button {
+  background: linear-gradient(90deg, #7c3aed, #ec4899);
+}
+
+/* App screen */
+.app {
+  max-width: 480px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.app h1 {
+  margin: 0 0 4px;
+}
+
+#greeting {
+  margin: 0 0 20px;
+  color: #666;
+}
+
+#task-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+input[type="text"]:focus {
+  outline: 2px solid #7c3aed;
+  border-color: transparent;
+}
+
+button {
+  padding: 10px 16px;
+  font-size: 16px;
+  color: #fff;
+  background: #7c3aed;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+#task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.task span {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.task button {
+  padding: 6px 10px;
+  font-size: 14px;
+  background: #e5484d;
+}
+
+#empty-message {
+  color: #888;
+  text-align: center;
+}
+
+/* App header: title and greeting on the left, log out on the right */
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#logout-button {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #555;
+  background: transparent;
+  border: 1px solid #ccc;
+}
+
+#logout-button:hover {
+  background: #f4f5f7;
+  opacity: 1;
+}
+
+/* Login screen decoration: icons scattered behind the card */
+.login {
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+}
+
+.icons {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.icon {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  font-size: var(--s);
+  line-height: 1;
+  opacity: 0.9;
+  transform: rotate(var(--r));
+  animation: float 6s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+.icon.formula {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  white-space: nowrap;
+  color: #fff;
+  opacity: 0.8;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes float {
+  0%, 100% { transform: rotate(var(--r)) translateY(0); }
+  50% { transform: rotate(var(--r)) translateY(-12px); }
+}
+
+/* On small screens, hide the extra icons and shrink the rest. */
+@media (max-width: 600px) {
+  .icon {
+    font-size: calc(var(--s) * 0.75);
+  }
+
+  .icon.optional {
+    display: none;
+  }
+}
+
+/* Respect the "reduce motion" setting. */
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    animation: none;
+  }
+}
+
+/* ---------- Colourful app screen ---------- */
+body {
+  background: linear-gradient(160deg, #e0e7ff, #fce7f3 50%, #fef3c7) fixed;
+}
+
+.app {
+  position: relative;
+  overflow: hidden;
+  padding-top: 32px;
+}
+
+.app::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, #7c3aed, #ec4899, #f59e0b);
+}
+
+.app h1 {
+  background: linear-gradient(90deg, #7c3aed, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #7c3aed;
+}
+
+#task-form button {
+  background: linear-gradient(90deg, #7c3aed, #ec4899);
+}
+
+.task {
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border-bottom: none;
+  border-left: 6px solid #ec4899;
+  border-radius: 10px;
+  background: #fdf2f8;
+}
+
+.task.cat-sport {
+  border-left-color: #10b981;
+  background: #ecfdf5;
+}
+
+.task.cat-study {
+  border-left-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.task.cat-work {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.task.cat-music {
+  border-left-color: #a855f7;
+  background: #faf5ff;
+}
+
+.task input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  accent-color: #7c3aed;
+  cursor: pointer;
+}
+
+.task .task-emoji {
+  flex: none;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.task .task-text {
+  flex: 1;
+}
+
+.task.done {
+  border-left-color: #d1d5db;
+  background: #f3f4f6;
+}
+
+.task.done .task-text {
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.task.cat-life {
+  border-left-color: #14b8a6;
+  background: #f0fdfa;
+}
+
+.task.done {
+  border-left-color: #d1d5db;
+  background: #f3f4f6;
+}
