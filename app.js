@@ -13,6 +13,9 @@ const taskForm = document.getElementById("task-form");
 const taskInput = document.getElementById("task-input");
 const taskList = document.getElementById("task-list");
 const emptyMessage = document.getElementById("empty-message");
+const countDelayed = document.getElementById("count-delayed");
+const countOpen = document.getElementById("count-open");
+const countDone = document.getElementById("count-done");
 
 // The logged-in user's name, or null when nobody is logged in.
 let currentUser = null;
@@ -334,6 +337,18 @@ function renderTasks() {
   });
 
   emptyMessage.hidden = tasks.length > 0;
+  updateSummary();
+}
+
+// Updates the footer. "Open" means not done, so delayed tasks count as open.
+function updateSummary() {
+  const done = tasks.filter((task) => task.status === "done").length;
+  const delayed = tasks.filter((task) => task.status === "delayed").length;
+  const open = tasks.length - done;
+
+  countDelayed.textContent = `${delayed} of ${open} open ${open === 1 ? "task" : "tasks"} delayed`;
+  countOpen.textContent = `${open} open`;
+  countDone.textContent = `${done} completed`;
 }
 
 // Gives keyboard focus back to a task's status button after a redraw.
