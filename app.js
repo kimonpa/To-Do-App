@@ -28,14 +28,20 @@ const STATUSES = [
   { key: "delayed", label: "Delayed" }
 ];
 
-// Each task is { id, text, status }. These belong to the current user.
+// Each task is { id, text, status, comment }. These belong to the current user.
 let tasks = [];
+
+// Longest comment allowed, in characters.
+const MAX_COMMENT_LENGTH = 500;
 
 // The id of the task whose status menu is open, or null when none is open.
 let openMenuId = null;
 
 // Status buttons from the last redraw, by task id. Used to give a button focus again.
 let statusButtons = {};
+
+// Comment boxes from the last redraw, by task id.
+let commentInputs = {};
 
 // Builds a pattern that matches whole words, with common endings (play, plays, played, playing).
 function words(...list) {
@@ -201,7 +207,12 @@ function loadTasks(name) {
     if (!Array.isArray(saved)) return [];
     return saved
       .filter((task) => task && typeof task.text === "string")
-      .map((task) => ({ id: task.id, text: task.text, status: normaliseStatus(task) }));
+      .map((task) => ({
+        id: task.id,
+        text: task.text,
+        status: normaliseStatus(task),
+        comment: typeof task.comment === "string" ? task.comment.slice(0, MAX_COMMENT_LENGTH) : ""
+      }));
   } catch (error) {
     return [];
   }
@@ -298,11 +309,57 @@ function createStatusControl(task) {
   return wrapper;
 }
 
+// Builds the comment box for a task: a text area and a Delete comment button.
+// The comment is saved as you type, under every status (open, delayed, done).
+function createCommentBox(task) {
+  const box = document.createElement("div");
+  box.className = "task-comment";
+
+  const input = document.createElement("textarea");
+  input.className = "comment-input";
+  input.rows = 2;
+  input.maxLength = MAX_COMMENT_LENGTH;
+  input.placeholder = "Add a comment…";
+  input.value = task.comment;
+  input.setAttribute("aria-label", `Comment for ${task.text}`);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "comment-delete";
+  deleteButton.textContent = "Delete comment";
+  deleteButton.disabled = task.comment === "";
+  deleteButton.setAttribute("aria-label", `Delete comment for ${task.text}`);
+
+  // Save on every keystroke. The list is not redrawn, so the cursor stays where it is.
+  input.addEventListener("input", () => {
+    task.comment = input.value.trim();
+    deleteButton.disabled = task.comment === "";
+    saveTasks();
+  });
+
+  deleteButton.addEventListener("click", () => {
+    task.comment = "";
+    saveTasks();
+    renderTasks();
+    focusCommentInput(task.id);
+  });
+
+  commentInputs[task.id] = input;
+  box.append(input, deleteButton);
+  return box;
+}
+
+// Gives keyboard focus to a task's comment box after a redraw.
+function focusCommentInput(id) {
+  if (commentInputs[id]) commentInputs[id].focus();
+}
+
 // Redraws the task list. Each row has a status box, an emoji for its category, the text and a Delete button.
 // Done tasks are greyed out and lose their emoji. Delayed tasks are marked red and keep their emoji.
 function renderTasks() {
   taskList.innerHTML = "";
   statusButtons = {};
+  commentInputs = {};
 
   tasks.forEach((task) => {
     const match = classify(task.text);
@@ -334,6 +391,8 @@ function renderTasks() {
     deleteButton.addEventListener("click", () => deleteTask(task.id));
     item.appendChild(deleteButton);
 
+    item.appendChild(createCommentBox(task));
+
     taskList.appendChild(item);
   });
 
@@ -360,7 +419,7 @@ function focusStatusButton(id) {
 
 // Adds a new, open task, then saves and redraws.
 function addTask(text) {
-  tasks.push({ id: Date.now() + Math.random(), text: text, status: "open" });
+  tasks.push({ id: Date.now() + Math.random(), text: text, status: "open", comment: "" });
   saveTasks();
   renderTasks();
 }
