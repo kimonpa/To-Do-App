@@ -268,6 +268,7 @@ body {
 }
 
 .task {
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 8px;
   padding: 10px 12px;
@@ -473,6 +474,50 @@ body {
 }
 
 .summary .clear-done:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Comment box under each task ---------- */
+.task .task-comment {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.comment-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #374151;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.comment-input:focus {
+  outline: 2px solid #7c3aed;
+  border-color: transparent;
+}
+
+.task .comment-delete {
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #b91c1c;
+  background: #fff;
+  border: 1px solid #fca5a5;
+}
+
+.task .comment-delete:hover:not(:disabled) {
+  background: #fee2e2;
+  opacity: 1;
+}
+
+.task .comment-delete:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
